@@ -8,16 +8,16 @@ const Container = styled.div`
 `;
 
 const Table = (props) => {
-  const { columns, datas, page, handleChangePage, totalCount, isSelected, onChecked } = props;
+  const { columns, datas, page, handleChangePage, totalCount, isSelected, onChecked, selectCount = 0, onAllCheck } = props;
   return (
     <Container>
       <div>
-        select count : 0
+        select count : {selectCount}
       </div>
       <Mtable>
         <TableHead>
           <TableRow>
-            <TableCell padding='checkbox'><Checkbox /></TableCell>
+            <TableCell padding='checkbox'><Checkbox onClick={onAllCheck} /></TableCell>
             {columns.lenght !==0 && columns.map(column => (
               <TableCell id={column} align="center">{column}</TableCell>
             ))}

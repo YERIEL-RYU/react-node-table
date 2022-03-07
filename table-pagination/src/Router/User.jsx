@@ -13,6 +13,7 @@ const User = () => {
   const datas = useSelector(state=>state.table.user);
   const totalCount = useSelector(state=>state.table.userLen);
   const selectCount = useSelector(state=>state.table.selectData).map(item=>item.page === page)
+  const selectData = useSelector(state=>state.table.selectData);
   const [columns, setColumns] = useState([]);
   const [selectedDatas, setSelectedDatas] = useState([]);
   const [allChecked, setAllChecked] = useState(false);
@@ -21,7 +22,12 @@ const User = () => {
     if ( datas.length !== 0) {
       setColumns(Object.keys(datas[0]))
     }
-  }, [datas])
+  }, [datas]);
+  useEffect(()=>{
+    if (selectData.length !== 0) {
+      setSelectedDatas(selectData)
+    }
+  },[selectData])
 
 
   const handleChangePage = (e, newPage) => {
@@ -30,7 +36,8 @@ const User = () => {
   }
   
   const isSelected = (row) => {
-    selectedDatas.filter(item=>item.page === page ? item.data.map(list => list.id).includes(row): item)
+    const checked = selectedDatas.filter(item=>item.page === page ? item.data.map(list => list.id).includes(row): false)
+    return checked.length !== 0 ? true : false;
   }
 
   const onChecked = (e, data) => {
@@ -76,16 +83,29 @@ const User = () => {
       pageIndex = selectedDatas.filter(item=>item.page===page)
       if (pageIndex.length !== 0) {
         subDatas = pageIndex[0].data
+        // console.log(subDatas)
+        // console.log(data)
         selectedDataIndex = subDatas.indexOf(data)
-        console.log(selectedDataIndex)
+        // console.log(selectedDataIndex)
         if ( selectedDataIndex === -1 ){
+          console.log('aaaa')
           setSelectedDatas(selectedDatas.map(item=>item.page === page ? {page: item.page, data: item.data.concat(data)} : item))
         } else if (selectedDataIndex === 0) {
+          console.log('bbb')
           setSelectedDatas(selectedDatas.filter(item=>item.page !== page))
         } else if ( selectedDataIndex === subDatas.length -1){
-          console.log('qqqqq')
+          console.log('ccc')
+          newSelectedData = newSelectedData.concat(subDatas.slice(0, -1));
+          const listItem = selectedDatas.filter(list=>list.page === page ? list.data = newSelectedData:list)
+          setSelectedDatas(listItem);
         } else if ( selectedDataIndex > 0 ){
-          console.log('bbbb')
+          console.log('ddd')
+          newSelectedData = newSelectedData.concat(
+            subDatas.slice(0, selectedDataIndex),
+            subDatas.slice(selectedDataIndex + 1),
+          );
+          const listItem = selectedDatas.filter(list=>list.page === page ? list.data = newSelectedData:list)
+          setSelectedDatas(listItem);
         } 
       }else {
         newSelectedData = newSelectedData.concat(subDatas, data);

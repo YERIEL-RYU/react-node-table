@@ -12,11 +12,11 @@ const User = () => {
   const [page, setPage] = useState(0)
   const datas = useSelector(state=>state.table.user);
   const totalCount = useSelector(state=>state.table.userLen);
-  const selectCount = useSelector(state=>state.table.selectData).map(item=>item.page === page)
   const selectData = useSelector(state=>state.table.selectData);
   const [columns, setColumns] = useState([]);
   const [selectedDatas, setSelectedDatas] = useState([]);
   const [allChecked, setAllChecked] = useState(false);
+  const [selectCount, setSelectCount] = useState(0)
 
   useEffect(()=>{
     if ( datas.length !== 0) {
@@ -24,10 +24,30 @@ const User = () => {
     }
   }, [datas]);
   useEffect(()=>{
+    var count = 0
     if (selectData.length !== 0) {
       setSelectedDatas(selectData)
+      for (var item of selectData) {
+        count += item.data.length
+      }
     }
-  },[selectData])
+    setSelectCount(count)
+  },[selectData]);
+  useEffect(()=>{
+    for (var item  of selectedDatas) {
+      if (item.page === page) {
+        if(item.data.length === datas.length) {
+          setAllChecked(true)
+          return;
+        }else {
+          setAllChecked(false)
+          return;
+        }
+      }else {
+        setAllChecked(false)
+      }  
+    }
+  },[page, selectedDatas, datas])
 
 
   const handleChangePage = (e, newPage) => {
@@ -36,22 +56,52 @@ const User = () => {
   }
   
   const isSelected = (row) => {
-    const checked = selectedDatas.filter(item=>item.page === page ? item.data.map(list => list.id).includes(row): false)
-    return checked.length !== 0 ? true : false;
+    var trueCount = 0;
+    for (var item of selectedDatas){
+      var data = item.data;
+      if (page === item.page) {
+        for (var i of data) {
+          for (var j in i) {
+            if (i[j] === row[j]) {
+              trueCount++;
+            }
+            if (trueCount === columns.length) return true;
+          }
+        }
+      }
+    }
+    return false;
+  };
+
+  const onIsSelectedIndex = (row) => {
+    // const checked = selectedDatas.filter(item=>item.page === page ? item.data.map(list => list.id).includes(row): false)
+    // return checked.length !== 0 ? true : false;
+    var trueCount = 0;
+    var trueList = [];
+    for (var item of selectedDatas){
+      var data = item.data;
+      if (page === item.page) {
+        for (var i of data) {
+          for (var j in i) {
+            if (i[j] === row[j]) trueCount++;
+          }
+          trueCount === columns.length ? trueList.push(true) : trueList.push(false);
+          trueCount = 0;
+        }
+      }
+    }
+    return trueList.indexOf(true)
   }
 
   const onChecked = (e, data) => {
-    // console.log(selectedDatas.length)
-    var selectedDataIndex = null
+    var selectedDataIndex = onIsSelectedIndex(data)
     var subDatas = []
     let newSelectedData = []
     if (selectedDatas.length === 0){
-      console.log('111')
       selectedDataIndex = -1;
       newSelectedData = newSelectedData.concat(subDatas, data);
       setSelectedDatas([{page:page, data:newSelectedData}]);
     }else if (selectedDatas.length ===1) {
-      console.log('222')
       var pageIndex = selectedDatas.filter(item=>item.page===page)
       if (pageIndex.length !== 0) {
         subDatas = pageIndex[0].data
@@ -62,7 +112,7 @@ const User = () => {
           setSelectedDatas([{page:page, data:newSelectedData}]);
         } else if (selectedDataIndex === 0) {
           newSelectedData = newSelectedData.concat(subDatas.slice(1));
-          setSelectedDatas([]);
+          setSelectedDatas([{page: page, data: newSelectedData}]);
         } else if (selectedDataIndex === subDatas.length - 1) {
           newSelectedData = newSelectedData.concat(subDatas.slice(0, -1));
           setSelectedDatas([{page:page, data:newSelectedData}]);
@@ -78,28 +128,22 @@ const User = () => {
         setSelectedDatas([{page:page, data:newSelectedData}]);
         setSelectedDatas([...selectedDatas, {page:page, data: newSelectedData}])
       }
+
     } else {
-      console.log('333')
       pageIndex = selectedDatas.filter(item=>item.page===page)
       if (pageIndex.length !== 0) {
         subDatas = pageIndex[0].data
-        // console.log(subDatas)
-        // console.log(data)
-        selectedDataIndex = subDatas.indexOf(data)
-        // console.log(selectedDataIndex)
         if ( selectedDataIndex === -1 ){
-          console.log('aaaa')
           setSelectedDatas(selectedDatas.map(item=>item.page === page ? {page: item.page, data: item.data.concat(data)} : item))
         } else if (selectedDataIndex === 0) {
-          console.log('bbb')
-          setSelectedDatas(selectedDatas.filter(item=>item.page !== page))
+          newSelectedData = newSelectedData.concat(subDatas.slice(1));
+          const listItem = selectedDatas.filter(list=>list.page === page ? list.data = newSelectedData:list)
+          setSelectedDatas(listItem);
         } else if ( selectedDataIndex === subDatas.length -1){
-          console.log('ccc')
           newSelectedData = newSelectedData.concat(subDatas.slice(0, -1));
           const listItem = selectedDatas.filter(list=>list.page === page ? list.data = newSelectedData:list)
           setSelectedDatas(listItem);
         } else if ( selectedDataIndex > 0 ){
-          console.log('ddd')
           newSelectedData = newSelectedData.concat(
             subDatas.slice(0, selectedDataIndex),
             subDatas.slice(selectedDataIndex + 1),
@@ -113,47 +157,38 @@ const User = () => {
         setSelectedDatas([...selectedDatas, {page:page, data: newSelectedData}])        
       }
     }
-    // console.log("selectedDataIndex : ", selectedDataIndex)
-    // console.log('tetetet : ', subDatas)
-    // 값 유무 체크
-    // setSelectedDatas([{page:page, data:newSelectedData}]);
+    if(subDatas.length === datas.length -1 ) {
+      setAllChecked(true)
+    }else {
+      setAllChecked(false)
+    }
   };
-
-  // const isSelected = (row) => selectedDatas.map(item => item.id).includes(row)
-
-  // const onChecked = (e, data) => {
-  //   const selectedDataIndex = selectedDatas.indexOf(data);
-  //   let newSelectedData = []
-  //   console.log(selectedDataIndex)
-  //   // 값 유무 체크
-  //   if (selectedDataIndex === -1) {
-  //     newSelectedData = newSelectedData.concat(selectedDatas, data);
-  //   } else if (selectedDataIndex === 0) {
-  //     newSelectedData = newSelectedData.concat(selectedDatas.slice(1));
-  //   } else if (selectedDataIndex === selectedDatas.length - 1) {
-  //     newSelectedData = newSelectedData.concat(selectedDatas.slice(0, -1));
-  //   } else if (selectedDataIndex > 0) {
-  //     newSelectedData = newSelectedData.concat(
-  //       selectedDatas.slice(0, selectedDataIndex),
-  //       selectedDatas.slice(selectedDataIndex + 1),
-  //     );
-  //   }
-
-  //   setSelectedDatas(newSelectedData);
-  // };
 
   useEffect(()=>{
     dispatch(checkOccurrence(selectedDatas))
   },[dispatch, selectedDatas]);
 
   const onAllCheck = (e) => {
-    var checked = e.target.checked
-    if (checked) {
-      setSelectedDatas(datas)
+    if (selectedDatas.length === 0) {
+      setSelectedDatas([{page: page, data: datas}])
       setAllChecked(true)
-    } else {
-      setSelectedDatas([])
-      setAllChecked(false)
+    }else{
+      for (var item of selectedDatas) {
+        if(item.page === page && item.data.length === datas.length) {
+          const listItem = selectedDatas.filter(list=>list.page === page ? list.data = [] : list)
+          setSelectedDatas(listItem)
+          setAllChecked(false)
+          return;
+        }else if (item.page === page && item.data.length !== datas.length) {
+          const listItem = selectedDatas.filter(list=>list.page === page ? list.data = datas : list)
+          setSelectedDatas(listItem)
+          setAllChecked(true)
+          return;
+        }else {
+          setAllChecked(true)
+          setSelectedDatas([...selectedDatas, {page: page, data: datas}])
+        }
+      }
     }
   };
 
@@ -168,8 +203,9 @@ const User = () => {
         totalCount={totalCount}
         isSelected={isSelected}
         onChecked={onChecked}
-        selectCount={selectCount}
         onAllCheck={onAllCheck}
+        allChecked={allChecked}
+        selectCount={selectCount}
       />
     </>
   );

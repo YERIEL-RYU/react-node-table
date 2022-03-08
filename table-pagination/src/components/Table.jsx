@@ -8,7 +8,7 @@ const Container = styled.div`
 `;
 
 const Table = (props) => {
-  const { columns, datas, page, handleChangePage, totalCount, isSelected, onChecked, selectCount = 0, onAllCheck } = props;
+  const { columns, datas, page, handleChangePage, totalCount, isSelected, onChecked, selectCount = 0, onAllCheck, allChecked } = props;
   return (
     <Container>
       <div>
@@ -16,8 +16,9 @@ const Table = (props) => {
       </div>
       <Mtable>
         <TableHead>
+          {console.log('presenter : ', allChecked)}
           <TableRow>
-            <TableCell padding='checkbox'><Checkbox onClick={onAllCheck} /></TableCell>
+            <TableCell padding='checkbox'><Checkbox onClick={onAllCheck} checked={allChecked}/></TableCell>
             {columns.lenght !==0 && columns.map(column => (
               <TableCell id={column} align="center">{column}</TableCell>
             ))}
@@ -25,10 +26,10 @@ const Table = (props) => {
         </TableHead>
         <TableBody>
           {datas.lenght !== 0 && datas.map(data=> {
-            const isItemSelected = isSelected(data.id);
+            // const isItemSelected = isSelected(data.id);
             return (
-            <TableRow key={data[columns[0]]} selected={isItemSelected}>
-              <TableCell padding='checkbox'><Checkbox checked={isItemSelected} onClick={(event)=>onChecked(event, data)}/></TableCell>
+            <TableRow key={data[columns[0]]} >
+              <TableCell padding='checkbox'><Checkbox checked={isSelected(data)} onClick={(event)=>onChecked(event, data)}/></TableCell>
               {columns.lenght !== 0 && columns.map(column => (
                 <TableCell key={column} align="center">{data[column]}</TableCell>
               ))}

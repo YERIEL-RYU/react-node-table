@@ -8,6 +8,8 @@ const Data = () => {
 
   const datas = useSelector(state=>state.table.data);
   const totalCount = useSelector(state=>state.table.dataLen);
+  const selectData = useSelector(state=>state.table.selectData);
+
   const [columns, setColumns] = useState([]);
   const [selectedDatas, setSelectedDatas] = useState([]);
 
@@ -31,8 +33,15 @@ const Data = () => {
   const isSelected = (row) => selectedDatas.map(item => item.id).includes(row)
 
   const onChecked = (e, data) => {
-    const selectedDataIndex = selectedDatas.indexOf(data);
-    let newSelectedData = []
+    var selectedDataIndex = null;
+    let newSelectedData = [];
+    let subDatas = [];
+
+    if (selectedDatas.length === 0) {
+      selectedDataIndex = -1;
+      newSelectedData = newSelectedData.concat(subDatas, data);
+      setSelectedDatas([{page:page, data:newSelectedData}]);
+    }
 
     // 값 유무 체크
     if (selectedDataIndex === -1) {

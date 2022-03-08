@@ -6,20 +6,16 @@ import Data from './Router/Data'
 function App() {
   return (
     <BrowserRouter>
-      <h1>Select Data Redux Test</h1>
+      <h1>Gmail style Checkbox</h1>
       <ul style={{padding:'10px', margin:'10px 20px'}}>
         <li>
-          <Link to="/">Table</Link>
-        </li>
-        <li>
-          <Link to="/data">Table</Link>
+          <Link to="/">Car</Link>
         </li>
       </ul>
       <hr />
       <Outlet />
       <Routes>
         <Route path='/' element={<User />}/>
-        <Route path='/data' element={<Data />}/>
       </Routes>
     </BrowserRouter>
   );
